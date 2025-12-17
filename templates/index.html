@@ -3,94 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Hunter</title>
+    <title>Game Hunter - Dedektif Modu</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', sans-serif; }
         
-        /* Başlık Stili - GRADYAN EFEKTİ */
+        /* Başlık Stili */
         .header-title { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            font-weight: 800; 
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            
-            /* Renk Geçişi (Gradient) */
-            background: linear-gradient(to right, #00ff88, #00c3ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            
-            /* Hafif Parlama (Drop Shadow ile) */
+            text-align: center; margin-bottom: 30px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+            background: linear-gradient(to right, #00ff88, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.3));
         }
         
-        /* Debug Kutusu */
+        /* Durum Çubuğu */
         .status-bar {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            padding: 10px;
-            text-align: center;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            font-size: 0.9rem;
-            color: #8b949e;
+            background-color: #161b22; border: 1px solid #30363d; padding: 15px; text-align: center;
+            border-radius: 8px; margin-bottom: 30px; font-size: 1rem; color: #8b949e;
         }
 
         /* Kart Tasarımı */
         .card { 
-            background-color: #161b22; 
-            border: 1px solid #30363d; 
-            margin-bottom: 15px; 
-            border-radius: 6px;
-            transition: transform 0.2s;
-            position: relative;
+            background-color: #161b22; border: 1px solid #30363d; margin-bottom: 15px; border-radius: 6px;
+            transition: transform 0.2s; position: relative; overflow: hidden; 
         }
+        .card:hover { transform: translateY(-3px); border-color: #00ff88; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1); }
         
-        .card:hover { 
-            transform: translateY(-3px); 
-            border-color: #00ff88; 
-            cursor: pointer; 
-            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
-        }
-        
-        .game-img { 
-            height: 120px; 
-            object-fit: cover; 
-            width: 100%; 
-            border-top-left-radius: 6px; 
-            border-top-right-radius: 6px;
-            background-color: #21262d; 
-        }
+        /* Resim Ayarı */
+        .game-img { height: 160px; object-fit: cover; width: 100%; border-top-left-radius: 6px; border-top-right-radius: 6px; background-color: #21262d; }
         
         .card-body { padding: 12px; }
         .card-title { font-size: 0.9rem; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;}
         
-        /* Sütun Başlıkları */
+        /* Sütunlar ve Rozetler */
         .col-head { text-align: center; font-weight: bold; padding: 10px; margin-bottom: 15px; border-bottom: 3px solid; font-size: 1.2rem;}
         .steam-head { color: #66c0f4; border-color: #66c0f4; }
         .itch-head { color: #fa5c5c; border-color: #fa5c5c; }
         .epic-head { color: #ffffff; border-color: #ffffff; }
-
-        /* Fiyat Etiketleri */
         .badge-steam { background-color: #4c6b22; color: #a4d007; float: right; }
         .badge-itch { background-color: #fa5c5c; color: white; float: right; }
         .badge-epic { background-color: #0078f2; color: white; float: right; }
+
+        /* --- TEST KUTUSU STİLİ (GÖZDEN KAÇMASI İMKANSIZ) --- */
+        .test-kutu {
+            display: inline-block;
+            margin-left: 15px;
+            padding: 5px 15px;
+            background-color: #2e0808; /* Koyu kırmızı arka plan */
+            border: 2px solid #ff0000; /* Parlak kırmızı çerçeve */
+            border-radius: 5px;
+            color: #ffc107; /* Sarı yazı */
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
 
 <div class="container py-4">
-    <!-- Gradyan Başlık -->
     <h2 class="header-title">🚀 GAME HUNTER</h2>
 
     <div class="status-bar">
-        VERİ DURUMU: 
+        VERİLER: 
         <span style="color:#66c0f4">Steam: {{ steam_games|length }}</span> | 
         <span style="color:#fa5c5c">Itch.io: {{ itch_games|length }}</span> | 
         <span style="color:#fff">Epic: {{ epic_games|length }}</span>
+
+        <div class="test-kutu">
+            🕒 SON KONTROL: <span id="canli-saat">Yükleniyor...</span>
+        </div>
     </div>
+
+    <script>
+        // Sayfa yüklenince çalışır
+        document.addEventListener("DOMContentLoaded", function() {
+            var simdi = new Date();
+            var saatFormat = simdi.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+            
+            // "canli-saat" id'li yere yazıyı basıyoruz
+            document.getElementById("canli-saat").innerText = saatFormat;
+            
+            console.log("Saat başarıyla yazıldı: " + saatFormat);
+        });
+    </script>
 
     <div class="row">
         <div class="col-md-4">
@@ -98,9 +92,7 @@
             {% for game in steam_games %}
             <div class="card">
                 <a href="{{ game.link }}" target="_blank" class="stretched-link"></a>
-                {% if game.image %}
-                <img src="{{ game.image }}" class="game-img" loading="lazy">
-                {% endif %}
+                {% if game.image %}<img src="{{ game.image }}" class="game-img" loading="lazy">{% endif %}
                 <div class="card-body">
                     <h6 class="card-title" title="{{ game.name }}">{{ game.name }}</h6>
                     <span class="badge badge-steam">{{ game.price }}</span>
@@ -115,9 +107,7 @@
                 {% for game in itch_games %}
                 <div class="card">
                     <a href="{{ game.link }}" target="_blank" class="stretched-link"></a>
-                    {% if game.image %}
-                    <img src="{{ game.image }}" class="game-img" loading="lazy">
-                    {% endif %}
+                    {% if game.image %}<img src="{{ game.image }}" class="game-img" loading="lazy">{% endif %}
                     <div class="card-body">
                         <h6 class="card-title" title="{{ game.name }}">{{ game.name }}</h6>
                         <span class="badge badge-itch">{{ game.price }}</span>
@@ -125,7 +115,7 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="alert alert-secondary mt-2 text-center" style="font-size:0.8rem">Veri bulunamadı.</div>
+                <div class="alert alert-secondary mt-2 text-center">Veri bulunamadı.</div>
             {% endif %}
         </div>
 
@@ -134,9 +124,7 @@
             {% for game in epic_games %}
             <div class="card">
                 <a href="{{ game.link }}" target="_blank" class="stretched-link"></a>
-                {% if game.image %}
-                <img src="{{ game.image }}" class="game-img" loading="lazy">
-                {% endif %}
+                {% if game.image %}<img src="{{ game.image }}" class="game-img" loading="lazy">{% endif %}
                 <div class="card-body">
                     <h6 class="card-title" title="{{ game.name }}">{{ game.name }}</h6>
                     <span class="badge badge-epic">{{ game.price }}</span>
