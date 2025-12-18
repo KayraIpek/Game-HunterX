@@ -203,8 +203,8 @@ def get_epic_data():
                             # Genelde /p/ çalışır ama bazen /en-US/p/ gerekir, browser halleder
                             link = f"https://store.epicgames.com/p/{slug}"
                     else:
-                        # Eğer hiçbir şekilde slug bulunamazsa genel sayfaya yönlendir (404 vermesinden iyidir)
-                        link = "https://store.epicgames.com/free-games"
+                        # Eğer hiçbir şekilde slug bulunamazsa 404 vermesin diye
+                        link = "https://store.epicgames.com/tr/sales-and-specials"
                     # ---------------------------------------
 
                     img_url = ""
@@ -276,4 +276,5 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
+
 
