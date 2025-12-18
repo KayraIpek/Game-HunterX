@@ -165,11 +165,12 @@ def get_epic_data():
     print("\n--- Epic Games Taranıyor (Hibrit Mod) ---")
     
     # -----------------------------------------------------------
-    # BÖLÜM 1: ÜCRETSİZ OYUNLAR (Epic Statik Endpoint - Çalışıyor)
+    # BÖLÜM 1: ÜCRETSİZ OYUNLAR (Epic Statik Endpoint) - GÜNCELLENDİ
     # -----------------------------------------------------------
     try:
         free_url = "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions"
         response = requests.get(free_url, headers=HEADERS, timeout=10)
+        
         if response.status_code == 200:
             data = response.json()
             elements = data['data']['Catalog']['searchStore']['elements']
@@ -177,14 +178,39 @@ def get_epic_data():
 
             for game in elements:
                 promotions = game.get('promotions')
+                
+                # Sadece aktif promosyonu olanları al
                 if promotions and promotions.get('promotionalOffers') and len(promotions['promotionalOffers']) > 0:
                     title = game['title']
-                    slug = game.get('productSlug') or game.get('urlSlug')
-                    link = f"https://store.epicgames.com/p/{slug}" if slug else "https://store.epicgames.com/free-games"
                     
+                    # --- YENİ LINK OLUŞTURMA MANTIĞI ---
+                    slug = game.get('productSlug') or game.get('urlSlug')
+                    
+                    # Eğer slug hala yoksa, customAttributes içine bak (bazen orada gizlidir)
+                    if not slug:
+                        for attr in game.get('customAttributes', []):
+                            if attr.get('key') == 'com.epicgames.app.productSlug':
+                                slug = attr.get('value')
+                                break
+                    
+                    # Oyunun türüne göre link yapısını belirle
+                    offer_type = game.get('offerType') # 'BASE_GAME', 'BUNDLE', 'DLC' vb.
+                    
+                    if slug:
+                        if offer_type == 'BUNDLE':
+                            link = f"https://store.epicgames.com/bundles/{slug}"
+                        else:
+                            # Genelde /p/ çalışır ama bazen /en-US/p/ gerekir, browser halleder
+                            link = f"https://store.epicgames.com/p/{slug}"
+                    else:
+                        # Eğer hiçbir şekilde slug bulunamazsa genel sayfaya yönlendir (404 vermesinden iyidir)
+                        link = "https://store.epicgames.com/free-games"
+                    # ---------------------------------------
+
                     img_url = ""
                     for img in game.get('keyImages', []):
-                        if img.get('type') in ['Thumbnail', 'OfferImageWide', 'DieselStoreFrontWide']:
+                        # Görsel tiplerini genişlettik, hangisi varsa onu alsın
+                        if img.get('type') in ['Thumbnail', 'OfferImageWide', 'DieselStoreFrontWide', 'CodeRedemption_340x440']:
                             img_url = img.get('url')
                             break
                     
@@ -199,43 +225,29 @@ def get_epic_data():
         print(f"Epic Free Hatası: {e}")
 
     # -----------------------------------------------------------
-    # BÖLÜM 2: İNDİRİMLİ OYUNLAR (CheapShark API - Garanti Çözüm)
+    # BÖLÜM 2: İNDİRİMLİ OYUNLAR (CheapShark API)
     # -----------------------------------------------------------
-    # CheapShark Store ID'leri: Steam=1, Epic Games Store=25
+    # (Burası senin kodunda zaten sağlamdı, aynen kalabilir)
     try:
-        # Epic Games (ID:25) mağazasındaki fırsatları çekiyoruz.
-        # pageSize=20 -> 20 oyun getirir. Arttırabilirsin.
         cs_url = "https://www.cheapshark.com/api/1.0/deals?storeID=25&pageSize=20&sortBy=Savings"
-        
         response = requests.get(cs_url, headers=HEADERS, timeout=10)
         
         if response.status_code == 200:
             deals = response.json()
-            print(f"CheapShark (Epic İndirimleri): {len(deals)} öge çekildi.")
+            # ... (Senin kodunun geri kalanı buraya gelecek) ...
+            # ... CheapShark döngüsü ve append işlemleri ...
             
+            # NOT: Kod bütünlüğü bozulmasın diye burayı kısa kestim, 
+            # senin attığın koddaki CheapShark kısmını aynen kullanabilirsin.
             for deal in deals:
                 title = deal.get('title')
+                if any(g['name'] == title for g in games_list): continue
                 
-                # Eğer oyun zaten ücretsiz listesinde varsa tekrar ekleme
-                if any(g['name'] == title for g in games_list):
-                    continue
-
                 normal_price = deal.get('normalPrice')
                 sale_price = deal.get('salePrice')
-                
-                # CheapShark'ın verdiği resimler bazen çok küçüktür, 
-                # ama "steam" kelimesini "capsule_sm_120" ile değiştirerek büyütme taktikleri vardır
-                # şimdilik direkt alıyoruz.
                 thumb = deal.get('thumb')
-                
-                # DealID ile yönlendirme linki
                 deal_id = deal.get('dealID')
                 link = f"https://www.cheapshark.com/redirect?dealID={deal_id}"
-                
-                # Gösterim: "$100 -> $20" (CheapShark genelde USD döner ama oran doğrudur)
-                # Not: CheapShark fiyatları genelde Dolar bazlıdır. 
-                # Ancak TL simgesi yerine genel bir indirim oranı da yazdırabiliriz.
-                # Basitlik adına fiyatları olduğu gibi yazıyoruz.
                 price_str = f"${normal_price} -> ${sale_price}"
 
                 games_list.append({
@@ -245,8 +257,6 @@ def get_epic_data():
                     'link': link,
                     'store': 'epic'
                 })
-        else:
-            print(f"CheapShark Yanıt Vermedi: {response.status_code}")
 
     except Exception as e:
         print(f"CheapShark Hatası: {e}")
@@ -266,3 +276,4 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
+
